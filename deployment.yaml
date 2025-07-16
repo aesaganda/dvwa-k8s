@@ -1,3 +1,10 @@
+# Namespace definition
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dvwa
+---
+# Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,6 +28,7 @@ spec:
           stdin: true
           tty: true
 ---
+# Service
 apiVersion: v1
 kind: Service
 metadata:
@@ -33,4 +41,25 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80
-  type: LoadBalancer
+  type: ClusterIP
+---
+# Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dvwa-ingress
+  namespace: dvwa
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: dvwa.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dvwa-service
+                port:
+                  number: 80
